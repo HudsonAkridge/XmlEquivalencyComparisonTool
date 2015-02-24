@@ -19,7 +19,10 @@ namespace XmlEquivalencyComparisonTool
             var docTwo = XDocument.Parse(tbSecondXml.Text);
 
             //Build element list for each document
-            var elements = docOne.Elements();
+            var rootOne = new ComparisonXmlElement(docOne.Root);
+            var rootTwo = new ComparisonXmlElement(docTwo.Root);
+
+            var result = rootOne.IsElementEquivalent(rootTwo);
         }
 
         public class ComparisonXmlElement

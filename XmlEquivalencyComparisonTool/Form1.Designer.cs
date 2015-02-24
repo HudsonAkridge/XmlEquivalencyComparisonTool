@@ -48,16 +48,20 @@
             this.tbFirstXml.Location = new System.Drawing.Point(30, 31);
             this.tbFirstXml.Multiline = true;
             this.tbFirstXml.Name = "tbFirstXml";
+            this.tbFirstXml.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.tbFirstXml.Size = new System.Drawing.Size(210, 74);
             this.tbFirstXml.TabIndex = 1;
+            this.tbFirstXml.Text = "<Root b=\'2\' a=\'1\'><Child>1</Child></Root>";
             // 
             // tbSecondXml
             // 
             this.tbSecondXml.Location = new System.Drawing.Point(30, 134);
             this.tbSecondXml.Multiline = true;
             this.tbSecondXml.Name = "tbSecondXml";
+            this.tbSecondXml.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.tbSecondXml.Size = new System.Drawing.Size(210, 86);
             this.tbSecondXml.TabIndex = 2;
+            this.tbSecondXml.Text = "<Root a=\'1\' b=\'2\'><Child>1</Child></Root>";
             // 
             // Form1
             // 
