@@ -57,6 +57,13 @@ namespace XmlEquivalencyComparisonTool
             if (missingElements.Any()) { responses.Add(new AreEquivalentResponse(false, String.Format("Elements missing: {0}", missingElements.Aggregate((x, y) => x + ", " + y)))); }
 
             //Are the elements equivalent?
+            foreach (var child in Children)
+            {
+                var toCompareChild = toCompare.Children[child.Key];
+                var response = child.Value.IsElementEquivalent(toCompareChild);
+
+                responses.AddRange(response);
+            }
 
             return responses;
         }
