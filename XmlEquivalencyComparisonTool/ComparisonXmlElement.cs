@@ -30,48 +30,103 @@ namespace XmlEquivalencyComparisonTool
             return !element.HasElements ?
                 new Dictionary<string, ComparisonXmlElement>()
                 : element.Elements()
-                    .ToDictionary(x => x.Name.ToString(), x => new ComparisonXmlElement(x, ParentDocument, this));
+                    .ToDictionary(GetElementKey, x => new ComparisonXmlElement(x, ParentDocument, this));
+        }
+
+        private string GetElementKey(XElement element)
+        {
+            var nameAttribute = element.Attribute(XName.Get("name"));
+            var nameAttributeValue = nameAttribute == null ? string.Empty : nameAttribute.Value;
+
+            return element.Name + nameAttributeValue;
         }
 
         public IList<AreEquivalentResponse> IsElementEquivalent(ComparisonXmlElement toCompare)
         {
             var responses = new List<AreEquivalentResponse>();
+            BuildSelfElementResponses(toCompare, responses);
+            BuildAttributeResponses(toCompare, responses);
+            BuildChildrenElementResponses(toCompare, responses);
 
+            return responses;
+        }
+
+        private void BuildSelfElementResponses(ComparisonXmlElement toCompare, List<AreEquivalentResponse> responses)
+        {
             var toCompareElement = toCompare.ActualElement;
-            if (ActualElement.Name.ToString() != toCompareElement.Name.ToString()) { responses.Add(new AreEquivalentResponse(false, String.Format("{0}/ Element name incorrect. Expected <{1}>, but was <{2}>", GetFullPath(), ActualElement.Name, toCompareElement.Name))); }
+            if (ActualElement.Name.ToString() != toCompareElement.Name.ToString())
+            {
+                responses.Add(new AreEquivalentResponse(false,
+                    String.Format("{0}/ Element name incorrect. Expected <{1}>, but was <{2}>", GetFullPath(),
+                        ActualElement.Name, toCompareElement.Name)));
+            }
 
             //Value concatenates all element values. We want to ensure that it's an element at the leaf, without any children elements, then we can do a value check
-            if (!ActualElement.HasElements && ActualElement.Value != toCompareElement.Value) { responses.Add(new AreEquivalentResponse(false, String.Format("{0}/ VALUE is incorrect. Expected {1}, but was {2}", GetFullPath(), ActualElement.Value, toCompareElement.Value))); }
+            if (!ActualElement.HasElements && ActualElement.Value != toCompareElement.Value)
+            {
+                responses.Add(new AreEquivalentResponse(false,
+                    String.Format("{0}/ VALUE is incorrect. Expected {1}, but was {2}", GetFullPath(), ActualElement.Value,
+                        toCompareElement.Value)));
+            }
+        }
 
+        private void BuildChildrenElementResponses(ComparisonXmlElement toCompare, List<AreEquivalentResponse> responses)
+        {
+            //Compare all children elements
+            //Are they missing elements?
+            var missingElements = toCompare.Children.Keys.Except(Children.Keys);
+            if (missingElements.Any())
+            {
+                responses.Add(new AreEquivalentResponse(false,
+                    String.Format("{0}/ Elements missing from one or the other of the documents: <{1}>", GetFullPath(),
+                        missingElements.Aggregate((x, y) => x + ", " + y))));
+            }
+
+            //Are the elements equivalent?
+            foreach (var child in Children)
+            {
+                ComparisonXmlElement toCompareChild;
+                toCompare.Children.TryGetValue(child.Key, out toCompareChild);
+                if (toCompareChild == null)
+                {
+                    continue;
+                }
+
+                var response = child.Value.IsElementEquivalent(toCompareChild);
+
+                responses.AddRange(response);
+            }
+        }
+
+        private void BuildAttributeResponses(ComparisonXmlElement toCompare, List<AreEquivalentResponse> responses)
+        {
             var missingAttributes = toCompare.Attributes.Keys.Except(Attributes.Keys);
-            if (missingAttributes.Any()) { responses.Add(new AreEquivalentResponse(false, String.Format("{0}/ Attributes missing: {1}", GetFullPath(), missingAttributes.Aggregate((x, y) => x + ", " + y)))); }
+            if (missingAttributes.Any())
+            {
+                responses.Add(new AreEquivalentResponse(false,
+                    String.Format("{0}/ Attributes missing: {1}", GetFullPath(),
+                        missingAttributes.Aggregate((x, y) => x + ", " + y))));
+            }
 
             var toCompareAttributes = toCompare.Attributes;
 
             foreach (var attribute in Attributes)
             {
-                var toCompareAttribute = toCompareAttributes[attribute.Key];
+                ComparisonXmlAttribute toCompareAttribute;
+                toCompareAttributes.TryGetValue(attribute.Key, out toCompareAttribute);
+                if (toCompareAttribute == null)
+                {
+                    continue;
+                }
+
                 var response = attribute.Value.AreAttributesEquivalent(toCompareAttribute);
 
-                if (response.Equivalent) { continue; }
+                if (response.Equivalent)
+                {
+                    continue;
+                }
                 responses.Add(response);
             }
-
-            //Compare all children elements
-            //Are they missing elements?
-            var missingElements = toCompare.Children.Keys.Except(Children.Keys);
-            if (missingElements.Any()) { responses.Add(new AreEquivalentResponse(false, String.Format("{0}/ Elements missing from one or the other of the documents: <{1}>", GetFullPath(), missingElements.Aggregate((x, y) => x + ", " + y)))); }
-
-            //Are the elements equivalent?
-            foreach (var child in Children)
-            {
-                var toCompareChild = toCompare.Children[child.Key];
-                var response = child.Value.IsElementEquivalent(toCompareChild);
-
-                responses.AddRange(response);
-            }
-
-            return responses;
         }
 
         internal string GetFullPath()
@@ -80,7 +135,7 @@ namespace XmlEquivalencyComparisonTool
             stringBuilder.Append(string.Format("/{0}", ActualElement.Name));
             stringBuilder.Insert(0,
                 ParentElement == null ?
-                    string.Format("{0}", ParentDocument.Name) 
+                    string.Format("{0}", ParentDocument.Name)
                     : ParentElement.GetFullPath());
 
             return stringBuilder.ToString();
