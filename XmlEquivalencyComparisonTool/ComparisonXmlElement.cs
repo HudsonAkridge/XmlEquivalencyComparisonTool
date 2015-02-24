@@ -1,44 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 
 namespace XmlEquivalencyComparisonTool
 {
     public class ComparisonXmlElement
     {
-        public XElement Element { get; set; }
+        public XElement ActualElement { get; set; }
         public IDictionary<string, ComparisonXmlAttribute> Attributes { get; set; }
+        public DocumentReference ParentDocument { get; set; }
+        public ComparisonXmlElement ParentElement { get; set; }
 
-        public ComparisonXmlElement(XElement element)
+        public ComparisonXmlElement(XElement actualElement, DocumentReference parentDocument, ComparisonXmlElement parentElement = null)
         {
-            Element = element;
-            Attributes = element.Attributes().ToDictionary(x => x.Name.ToString().ToLower(), x => new ComparisonXmlAttribute(x));
-            Children = BuildChildren(element);
+            ActualElement = actualElement;
+            ParentDocument = parentDocument;
+            ParentElement = parentElement;
+
+            Attributes = actualElement.Attributes().ToDictionary(x => x.Name.ToString().ToLower(), x => new ComparisonXmlAttribute(x, this, ParentDocument));
+            Children = BuildChildren(actualElement);
         }
 
         public IDictionary<string, ComparisonXmlElement> Children { get; set; }
 
-        public IDictionary<string,ComparisonXmlElement> BuildChildren(XElement element)
+        public IDictionary<string, ComparisonXmlElement> BuildChildren(XElement element)
         {
             return !element.HasElements ?
                 new Dictionary<string, ComparisonXmlElement>()
-                :  element.Elements()
-                    .ToDictionary(x=> x.Name.ToString(), x => new ComparisonXmlElement(x));
+                : element.Elements()
+                    .ToDictionary(x => x.Name.ToString(), x => new ComparisonXmlElement(x, ParentDocument, this));
         }
 
         public IList<AreEquivalentResponse> IsElementEquivalent(ComparisonXmlElement toCompare)
         {
             var responses = new List<AreEquivalentResponse>();
 
-            var toCompareElement = toCompare.Element;
-            if (Element.Name.ToString() != toCompareElement.Name.ToString()) { responses.Add(new AreEquivalentResponse(false, String.Format("Element name incorrect. Expected {0}, but was {1}", Element.Name, toCompareElement.Name))); }
+            var toCompareElement = toCompare.ActualElement;
+            if (ActualElement.Name.ToString() != toCompareElement.Name.ToString()) { responses.Add(new AreEquivalentResponse(false, String.Format("{0}/ Element name incorrect. Expected <{1}>, but was <{2}>", GetFullPath(), ActualElement.Name, toCompareElement.Name))); }
 
             //Value concatenates all element values. We want to ensure that it's an element at the leaf, without any children elements, then we can do a value check
-            if (!Element.HasElements && Element.Value != toCompareElement.Value) { responses.Add(new AreEquivalentResponse(false, String.Format("Element {0} value incorrect. Expected {1}, but was {2}", Element.Name, Element.Value, toCompareElement.Value))); }
+            if (!ActualElement.HasElements && ActualElement.Value != toCompareElement.Value) { responses.Add(new AreEquivalentResponse(false, String.Format("{0}/ VALUE is incorrect. Expected {1}, but was {2}", GetFullPath(), ActualElement.Value, toCompareElement.Value))); }
 
             var missingAttributes = toCompare.Attributes.Keys.Except(Attributes.Keys);
-            if (missingAttributes.Any()) { responses.Add(new AreEquivalentResponse(false, String.Format("Attributes missing: {0}", missingAttributes.Aggregate((x, y) => x + ", " + y)))); }
+            if (missingAttributes.Any()) { responses.Add(new AreEquivalentResponse(false, String.Format("{0}/ Attributes missing: {1}", GetFullPath(), missingAttributes.Aggregate((x, y) => x + ", " + y)))); }
 
             var toCompareAttributes = toCompare.Attributes;
 
@@ -54,7 +60,7 @@ namespace XmlEquivalencyComparisonTool
             //Compare all children elements
             //Are they missing elements?
             var missingElements = toCompare.Children.Keys.Except(Children.Keys);
-            if (missingElements.Any()) { responses.Add(new AreEquivalentResponse(false, String.Format("Elements missing: {0}", missingElements.Aggregate((x, y) => x + ", " + y)))); }
+            if (missingElements.Any()) { responses.Add(new AreEquivalentResponse(false, String.Format("{0}/ Elements missing from one or the other of the documents: <{1}>", GetFullPath(), missingElements.Aggregate((x, y) => x + ", " + y)))); }
 
             //Are the elements equivalent?
             foreach (var child in Children)
@@ -66,6 +72,18 @@ namespace XmlEquivalencyComparisonTool
             }
 
             return responses;
+        }
+
+        internal string GetFullPath()
+        {
+            var stringBuilder = new StringBuilder();
+            stringBuilder.Append(string.Format("/{0}", ActualElement.Name));
+            stringBuilder.Insert(0,
+                ParentElement == null ?
+                    string.Format("{0}", ParentDocument.Name) 
+                    : ParentElement.GetFullPath());
+
+            return stringBuilder.ToString();
         }
     }
 }

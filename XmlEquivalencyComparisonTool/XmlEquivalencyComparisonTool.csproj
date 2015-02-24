@@ -47,6 +47,7 @@
     <Compile Include="AreEquivalentResponse.cs" />
     <Compile Include="ComparisonXmlAttribute.cs" />
     <Compile Include="ComparisonXmlElement.cs" />
+    <Compile Include="DocumentReference.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
