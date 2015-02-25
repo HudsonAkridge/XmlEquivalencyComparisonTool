@@ -74,12 +74,19 @@ namespace XmlEquivalencyComparisonTool
         {
             //Compare all children elements
             //Are they missing elements?
-            var missingElements = toCompare.Children.Keys.Except(Children.Keys);
-            if (missingElements.Any())
+            var missingElementsOnPrimary = Children.Keys.Except(toCompare.Children.Keys);
+            var missingElementsOnComparison = toCompare.Children.Keys.Except(Children.Keys);
+            if (missingElementsOnPrimary.Any())
             {
                 responses.Add(new AreEquivalentResponse(false,
-                    String.Format("{0}/ Elements missing from one or the other of the documents: <{1}>", GetFullPath(),
-                        missingElements.Aggregate((x, y) => x + ", " + y))));
+                    String.Format("{0}/ Elements missing from document: {1}", GetFullPath(),
+                        missingElementsOnPrimary.Aggregate((x, y) =>  x + ", " + y ))));
+            }
+            if (missingElementsOnComparison.Any())
+            {
+                responses.Add(new AreEquivalentResponse(false,
+                    String.Format("{0}/ Elements missing from document: {1}", toCompare.GetFullPath(),
+                        missingElementsOnComparison.Aggregate((x, y) => x + ", " + y ))));
             }
 
             //Are the elements equivalent?
@@ -100,12 +107,19 @@ namespace XmlEquivalencyComparisonTool
 
         private void BuildAttributeResponses(ComparisonXmlElement toCompare, List<AreEquivalentResponse> responses)
         {
-            var missingAttributes = toCompare.Attributes.Keys.Except(Attributes.Keys);
-            if (missingAttributes.Any())
+            var missingAttributesOnPrimary = Attributes.Keys.Except(toCompare.Attributes.Keys);
+            if (missingAttributesOnPrimary.Any())
             {
                 responses.Add(new AreEquivalentResponse(false,
                     String.Format("{0}/ Attributes missing: {1}", GetFullPath(),
-                        missingAttributes.Aggregate((x, y) => x + ", " + y))));
+                        missingAttributesOnPrimary.Aggregate((x, y) => x + ", " + y))));
+            }
+            var missingAttributesOnComparison = toCompare.Attributes.Keys.Except(Attributes.Keys);
+            if (missingAttributesOnComparison.Any())
+            {
+                responses.Add(new AreEquivalentResponse(false,
+                    String.Format("{0}/ Attributes missing: {1}", toCompare.GetFullPath(),
+                        missingAttributesOnComparison.Aggregate((x, y) => x + ", " + y))));
             }
 
             var toCompareAttributes = toCompare.Attributes;
