@@ -32,5 +32,35 @@ namespace XmlEquivalencyComparisonTool
             var results = rootOne.IsElementEquivalent(rootTwo);
             tbOutput.Text = results.Where(x => !x.Equivalent).Select(x => "- " + x.Reason).Aggregate((x, y) => x + Environment.NewLine + y);
         }
+
+        private void btnAddToAttributeIgnoreList_Click(object sender, EventArgs e)
+        {
+            attributesToIgnore.Items.Add(tbAddIgnoreAttribute.Text);
+        }
+
+        private void btnClearAllAttributes_Click(object sender, EventArgs e)
+        {
+            attributesToIgnore.Items.Clear();
+        }
+
+        private void tbAddIgnoreAttribute_Enter(object sender, EventArgs e)
+        {
+            tbAddIgnoreAttribute.SelectAll();
+        }
+
+        private void tbFirstXml_Enter(object sender, EventArgs e)
+        {
+            tbFirstXml.SelectAll();
+        }
+
+        private void tbSecondXml_Enter(object sender, EventArgs e)
+        {
+            tbSecondXml.SelectAll();
+        }
+
+        private void tbOutput_Enter(object sender, EventArgs e)
+        {
+            tbOutput.SelectAll();
+        }
     }
 }
