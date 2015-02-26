@@ -7,13 +7,13 @@ using System.Xml.Linq;
 
 namespace XmlEquivalencyComparisonTool
 {
-    public class PromotElementToAttributeXmlPreProcessor : XmlPreProcessor
+    public class PromoteElementToAttributeXmlPreProcessor : XmlPreProcessor
     {
         private readonly XName _elementToPromote;
         private readonly XName _attributeContainingValue;
         private string _namespace;
 
-        public PromotElementToAttributeXmlPreProcessor(XName elementToPromote, XName attributeContainingValue)
+        public PromoteElementToAttributeXmlPreProcessor(XName elementToPromote, XName attributeContainingValue)
         {
             _elementToPromote = elementToPromote;
             _attributeContainingValue = attributeContainingValue;

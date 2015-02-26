@@ -5,20 +5,20 @@ using System.Xml.Linq;
 
 namespace XmlEquivalencyComparisonTool
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
         }
 
         private void buttonCompare_Click(object sender, EventArgs e)
         {
-            var preProcessor = new PromotElementToAttributeXmlPreProcessor(XName.Get("column"), XName.Get("name"));
+            var preProcessor = new PromoteElementToAttributeXmlPreProcessor(XName.Get("column"), XName.Get("name"));
 
-            var stringPreProcessor = new ClearXmlnsAttributeStringPreProcessor();
-            var firstXml = stringPreProcessor.Process(tbFirstXml.Text);
-            var secondXml = stringPreProcessor.Process(tbSecondXml.Text);
+            var xmlnsRemover = new ClearXmlnsAttributeStringPreProcessor();
+            var firstXml = xmlnsRemover.Process(tbFirstXml.Text);
+            var secondXml = xmlnsRemover.Process(tbSecondXml.Text);
             var docOne = XElement.Parse(firstXml);
             var docTwo = XElement.Parse(secondXml);
 
@@ -26,11 +26,11 @@ namespace XmlEquivalencyComparisonTool
             var processedDocTwo = preProcessor.Process(docTwo);
 
             //Build element list for each document
-            var rootOne = new ComparisonXmlElement(processedDocOne, new DocumentReference("Document One"));
-            var rootTwo = new ComparisonXmlElement(processedDocTwo, new DocumentReference("Document Two"));
+            var rootOne = new ComparisonXmlElement(processedDocOne, new DocumentReference("expected"));
+            var rootTwo = new ComparisonXmlElement(processedDocTwo, new DocumentReference("comparison"));
 
             var results = rootOne.IsElementEquivalent(rootTwo);
-            tbOutput.Text = results.Where(x => !x.Equivalent).Select(x => x.Reason).Aggregate((x, y) => x + Environment.NewLine + y);
+            tbOutput.Text = results.Where(x => !x.Equivalent).Select(x => "- " + x.Reason).Aggregate((x, y) => x + Environment.NewLine + y);
         }
     }
 }

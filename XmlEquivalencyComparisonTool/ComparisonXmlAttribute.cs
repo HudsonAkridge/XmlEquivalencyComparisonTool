@@ -21,7 +21,7 @@ namespace XmlEquivalencyComparisonTool
             var toCompareAttribute = toCompare.Attribute;
 
             return toCompareAttribute.Value != Attribute.Value
-                ? new AreEquivalentResponse(false, String.Format("Attribute value on {0}/@{1} are different. Expected: {2}, Actual: {3}", ParentElement.GetFullPath(), Attribute.Name, Attribute.Value, toCompareAttribute.Value))
+                ? new AreEquivalentResponse(false, String.Format("{0}/@{1}-> attributes are different. Expected: {2}, Actual: {3}", ParentElement.GetFullPath(), Attribute.Name, Attribute.Value, toCompareAttribute.Value))
                 : new AreEquivalentResponse(true);
         }
     }

@@ -57,7 +57,7 @@ namespace XmlEquivalencyComparisonTool
             if (ActualElement.Name.ToString() != toCompareElement.Name.ToString())
             {
                 responses.Add(new AreEquivalentResponse(false,
-                    String.Format("{0}/ Element name incorrect. Expected <{1}>, but was <{2}>", GetFullPath(),
+                    String.Format("{0}/-> Element name incorrect. Expected <{1}>, but was <{2}>", GetFullPath(),
                         ActualElement.Name, toCompareElement.Name)));
             }
 
@@ -65,7 +65,7 @@ namespace XmlEquivalencyComparisonTool
             if (!ActualElement.HasElements && ActualElement.Value != toCompareElement.Value)
             {
                 responses.Add(new AreEquivalentResponse(false,
-                    String.Format("{0}/ VALUE is incorrect. Expected {1}, but was {2}", GetFullPath(), ActualElement.Value,
+                    String.Format("{0}/-> VALUE is incorrect. Expected {1}, but was {2}", GetFullPath(), ActualElement.Value,
                         toCompareElement.Value)));
             }
         }
@@ -79,13 +79,13 @@ namespace XmlEquivalencyComparisonTool
             if (missingElementsOnPrimary.Any())
             {
                 responses.Add(new AreEquivalentResponse(false,
-                    String.Format("{0}/ Elements missing from document: {1}", GetFullPath(),
+                    String.Format("{0}/-> Elements missing from document: {1}", GetFullPath(),
                         missingElementsOnPrimary.Aggregate((x, y) =>  x + ", " + y ))));
             }
             if (missingElementsOnComparison.Any())
             {
                 responses.Add(new AreEquivalentResponse(false,
-                    String.Format("{0}/ Elements missing from document: {1}", toCompare.GetFullPath(),
+                    String.Format("{0}/-> Elements missing from document: {1}", toCompare.GetFullPath(),
                         missingElementsOnComparison.Aggregate((x, y) => x + ", " + y ))));
             }
 
@@ -111,14 +111,14 @@ namespace XmlEquivalencyComparisonTool
             if (missingAttributesOnPrimary.Any())
             {
                 responses.Add(new AreEquivalentResponse(false,
-                    String.Format("{0}/ Attributes missing: {1}", GetFullPath(),
+                    String.Format("{0}/-> Attributes missing: {1}", GetFullPath(),
                         missingAttributesOnPrimary.Aggregate((x, y) => x + ", " + y))));
             }
             var missingAttributesOnComparison = toCompare.Attributes.Keys.Except(Attributes.Keys);
             if (missingAttributesOnComparison.Any())
             {
                 responses.Add(new AreEquivalentResponse(false,
-                    String.Format("{0}/ Attributes missing: {1}", toCompare.GetFullPath(),
+                    String.Format("{0}/-> Attributes missing: {1}", toCompare.GetFullPath(),
                         missingAttributesOnComparison.Aggregate((x, y) => x + ", " + y))));
             }
 
