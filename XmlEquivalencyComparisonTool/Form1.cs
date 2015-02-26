@@ -14,14 +14,13 @@ namespace XmlEquivalencyComparisonTool
 
         private void buttonCompare_Click(object sender, EventArgs e)
         {
-            var preProcessor = new PromoteElementToAttributeXmlPreProcessor(XName.Get("column"), XName.Get("name"));
-
             var xmlnsRemover = new ClearXmlnsAttributeStringPreProcessor();
             var firstXml = xmlnsRemover.Process(tbFirstXml.Text);
             var secondXml = xmlnsRemover.Process(tbSecondXml.Text);
             var docOne = XElement.Parse(firstXml);
             var docTwo = XElement.Parse(secondXml);
 
+            var preProcessor = new PromoteElementToAttributeXmlPreProcessor(XName.Get("column"), XName.Get("name"));
             var processedDocOne = preProcessor.Process(docOne);
             var processedDocTwo = preProcessor.Process(docTwo);
 
