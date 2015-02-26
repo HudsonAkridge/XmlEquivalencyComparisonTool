@@ -14,13 +14,20 @@ namespace XmlEquivalencyComparisonTool
 
         private void buttonCompare_Click(object sender, EventArgs e)
         {
-            //TODO: Break into two different lookup files
-            var docOne = XDocument.Parse(tbFirstXml.Text);
-            var docTwo = XDocument.Parse(tbSecondXml.Text);
+            var preProcessor = new PromotElementToAttributeXmlPreProcessor(XName.Get("column"), XName.Get("name"));
+
+            var stringPreProcessor = new ClearXmlnsAttributeStringPreProcessor();
+            var firstXml = stringPreProcessor.Process(tbFirstXml.Text);
+            var secondXml = stringPreProcessor.Process(tbSecondXml.Text);
+            var docOne = XElement.Parse(firstXml);
+            var docTwo = XElement.Parse(secondXml);
+
+            var processedDocOne = preProcessor.Process(docOne);
+            var processedDocTwo = preProcessor.Process(docTwo);
 
             //Build element list for each document
-            var rootOne = new ComparisonXmlElement(docOne.Root, new DocumentReference("Document One"));
-            var rootTwo = new ComparisonXmlElement(docTwo.Root, new DocumentReference("Document Two"));
+            var rootOne = new ComparisonXmlElement(processedDocOne, new DocumentReference("Document One"));
+            var rootTwo = new ComparisonXmlElement(processedDocTwo, new DocumentReference("Document Two"));
 
             var results = rootOne.IsElementEquivalent(rootTwo);
             tbOutput.Text = results.Where(x => !x.Equivalent).Select(x => x.Reason).Aggregate((x, y) => x + Environment.NewLine + y);
