@@ -18,7 +18,7 @@ namespace XmlEquivalencyComparisonTool
         public override XElement Process(XElement document)
         {
             var result = new XElement(document);
-            foreach (var element in result.Elements())
+            foreach (var element in result.DescendantsAndSelf())
             {
                 RemoveMatchingAttributes(element);
             }
@@ -28,15 +28,6 @@ namespace XmlEquivalencyComparisonTool
 
         private void RemoveMatchingAttributes(XElement xElement)
         {
-            var children = xElement.Elements().ToArray();
-            if (children.Any())
-            {
-                foreach (var child in xElement.Elements())
-                {
-                    RemoveMatchingAttributes(child);
-                }
-            }
-
             if (!xElement.HasAttributes)
             { return; }
 

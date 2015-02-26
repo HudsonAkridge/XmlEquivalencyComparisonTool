@@ -10,16 +10,16 @@ namespace XmlEquivalencyComparisonTool
     {
         public XElement ActualElement { get; set; }
         public IDictionary<string, ComparisonXmlAttribute> Attributes { get; set; }
-        public DocumentReference ParentDocument { get; set; }
+        public ComparisonConfiguration Config { get; set; }
         public ComparisonXmlElement ParentElement { get; set; }
 
-        public ComparisonXmlElement(XElement actualElement, DocumentReference parentDocument, ComparisonXmlElement parentElement = null)
+        public ComparisonXmlElement(XElement actualElement, ComparisonConfiguration config, ComparisonXmlElement parentElement = null)
         {
             ActualElement = actualElement;
-            ParentDocument = parentDocument;
+            Config = config;
             ParentElement = parentElement;
 
-            Attributes = actualElement.Attributes().ToDictionary(x => x.Name.ToString().ToLower(), x => new ComparisonXmlAttribute(x, this, ParentDocument));
+            Attributes = actualElement.Attributes().ToDictionary(x => x.Name.ToString().ToLower(), x => new ComparisonXmlAttribute(x, this, Config));
             Children = BuildChildren(actualElement);
         }
 
@@ -30,7 +30,7 @@ namespace XmlEquivalencyComparisonTool
             return !element.HasElements ?
                 new Dictionary<string, ComparisonXmlElement>()
                 : element.Elements()
-                    .ToDictionary(GetElementKey, x => new ComparisonXmlElement(x, ParentDocument, this));
+                    .ToDictionary(GetElementKey, x => new ComparisonXmlElement(x, Config, this));
         }
 
         private string GetElementKey(XElement element)
@@ -149,7 +149,7 @@ namespace XmlEquivalencyComparisonTool
             stringBuilder.Append(string.Format("/{0}", ActualElement.Name));
             stringBuilder.Insert(0,
                 ParentElement == null ?
-                    string.Format("{0}", ParentDocument.Name)
+                    string.Format("{0}", Config.DocumentName)
                     : ParentElement.GetFullPath());
 
             return stringBuilder.ToString();

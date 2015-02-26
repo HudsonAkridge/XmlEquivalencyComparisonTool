@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
@@ -7,6 +8,9 @@ namespace XmlEquivalencyComparisonTool
 {
     public partial class MainForm : Form
     {
+        private IEnumerable<XmlPreProcessor> _xmlPreProcessors;
+        private IEnumerable<StringPreProcessor> _stringPreProcessors;
+
         public MainForm()
         {
             InitializeComponent();
@@ -14,19 +18,35 @@ namespace XmlEquivalencyComparisonTool
 
         private void buttonCompare_Click(object sender, EventArgs e)
         {
-            var xmlnsRemover = new ClearXmlnsAttributeStringPreProcessor();
-            var firstXml = xmlnsRemover.Process(tbFirstXml.Text);
-            var secondXml = xmlnsRemover.Process(tbSecondXml.Text);
-            var docOne = XElement.Parse(firstXml);
-            var docTwo = XElement.Parse(secondXml);
+            //TODO: Load both of these in deterministically based on options chosen in the UI
+            _xmlPreProcessors = new List<XmlPreProcessor>
+            {
+                new RemoveAttributesFromXmlPreProcessor(attributesToIgnore.Items.Cast<string>()),
+                new PromoteElementToAttributeXmlPreProcessor(XName.Get("column"), XName.Get("name"))
+            };
+            _stringPreProcessors = new List<StringPreProcessor>
+            {
+                new ClearXmlnsAttributeStringPreProcessor()
+            };
 
-            var preProcessor = new PromoteElementToAttributeXmlPreProcessor(XName.Get("column"), XName.Get("name"));
-            var processedDocOne = preProcessor.Process(docOne);
-            var processedDocTwo = preProcessor.Process(docTwo);
+            var expectedXmlText = tbFirstXml.Text;
+            var comparisonXmlText = tbSecondXml.Text;
+            foreach (var stringPreProcessor in _stringPreProcessors)
+            {
+                expectedXmlText = stringPreProcessor.Process(expectedXmlText);
+                comparisonXmlText = stringPreProcessor.Process(comparisonXmlText);
+            }
 
-            //Build element list for each document
-            var rootOne = new ComparisonXmlElement(processedDocOne, new DocumentReference("expected"));
-            var rootTwo = new ComparisonXmlElement(processedDocTwo, new DocumentReference("comparison"));
+            var expectedXmlDoc = XElement.Parse(expectedXmlText);
+            var comparisonXmlDoc = XElement.Parse(comparisonXmlText);
+            foreach (var xmlPreProcessor in _xmlPreProcessors)
+            {
+                expectedXmlDoc = xmlPreProcessor.Process(expectedXmlDoc);
+                comparisonXmlDoc = xmlPreProcessor.Process(comparisonXmlDoc);
+            }
+
+            var rootOne = new ComparisonXmlElement(expectedXmlDoc, new ComparisonConfiguration("expectedDoc"));
+            var rootTwo = new ComparisonXmlElement(comparisonXmlDoc, new ComparisonConfiguration("comparisonDoc"));
 
             var results = rootOne.IsElementEquivalent(rootTwo);
             tbOutput.Text = results.Where(x => !x.Equivalent).Select(x => "- " + x.Reason).Aggregate((x, y) => x + Environment.NewLine + y);

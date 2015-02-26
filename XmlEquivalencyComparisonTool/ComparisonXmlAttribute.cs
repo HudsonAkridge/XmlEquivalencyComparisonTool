@@ -7,9 +7,9 @@ namespace XmlEquivalencyComparisonTool
     {
         public XAttribute Attribute { get; set; }
         public ComparisonXmlElement ParentElement { get; set; }
-        public DocumentReference ParentDocument { get; set; }
+        public ComparisonConfiguration ParentDocument { get; set; }
 
-        public ComparisonXmlAttribute(XAttribute attribute, ComparisonXmlElement parentElement, DocumentReference parentDocument)
+        public ComparisonXmlAttribute(XAttribute attribute, ComparisonXmlElement parentElement, ComparisonConfiguration parentDocument)
         {
             Attribute = attribute;
             ParentElement = parentElement;
