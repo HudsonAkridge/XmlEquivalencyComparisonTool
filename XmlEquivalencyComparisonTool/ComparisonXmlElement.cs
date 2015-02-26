@@ -35,10 +35,10 @@ namespace XmlEquivalencyComparisonTool
 
         private string GetElementKey(XElement element)
         {
-            var nameAttribute = element.Attribute(XName.Get("name"));
-            var nameAttributeValue = nameAttribute == null ? string.Empty : nameAttribute.Value;
+            var identificationAttribute = element.Attribute(XName.Get(Config.AttributeToIdentifyDuplicateElements));
+            var identificationAttributeValue = identificationAttribute == null ? string.Empty : identificationAttribute.Value;
 
-            return element.Name + nameAttributeValue;
+            return element.Name + identificationAttributeValue;
         }
 
         public IList<AreEquivalentResponse> IsElementEquivalent(ComparisonXmlElement toCompare)
@@ -95,9 +95,7 @@ namespace XmlEquivalencyComparisonTool
                 ComparisonXmlElement toCompareChild;
                 toCompare.Children.TryGetValue(child.Key, out toCompareChild);
                 if (toCompareChild == null)
-                {
-                    continue;
-                }
+                { continue; }
 
                 var response = child.Value.IsElementEquivalent(toCompareChild);
 
@@ -129,16 +127,12 @@ namespace XmlEquivalencyComparisonTool
                 ComparisonXmlAttribute toCompareAttribute;
                 toCompareAttributes.TryGetValue(attribute.Key, out toCompareAttribute);
                 if (toCompareAttribute == null)
-                {
-                    continue;
-                }
+                { continue; }
 
                 var response = attribute.Value.AreAttributesEquivalent(toCompareAttribute);
 
                 if (response.Equivalent)
-                {
-                    continue;
-                }
+                { continue; }
                 responses.Add(response);
             }
         }
