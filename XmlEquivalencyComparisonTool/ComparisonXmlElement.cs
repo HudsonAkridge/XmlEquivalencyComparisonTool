@@ -80,13 +80,13 @@ namespace XmlEquivalencyComparisonTool
             {
                 responses.Add(new AreEquivalentResponse(false,
                     String.Format("{0}/-> Elements missing from document: {1}", GetFullPath(),
-                        missingElementsOnPrimary.Aggregate((x, y) =>  x + ", " + y ))));
+                        missingElementsOnPrimary.Aggregate((x, y) => x + ", " + y))));
             }
             if (missingElementsOnComparison.Any())
             {
                 responses.Add(new AreEquivalentResponse(false,
                     String.Format("{0}/-> Elements missing from document: {1}", toCompare.GetFullPath(),
-                        missingElementsOnComparison.Aggregate((x, y) => x + ", " + y ))));
+                        missingElementsOnComparison.Aggregate((x, y) => x + ", " + y))));
             }
 
             //Are the elements equivalent?
@@ -146,7 +146,13 @@ namespace XmlEquivalencyComparisonTool
         internal string GetFullPath()
         {
             var stringBuilder = new StringBuilder();
-            stringBuilder.Append(string.Format("/{0}", ActualElement.Name));
+            var logicalElementAttribute = ActualElement.Attributes(XName.Get(Config.AttributeToIdentifyDuplicateElements)).FirstOrDefault();
+            var isLeafNodeWithIdentificationAttribute = logicalElementAttribute != null && !ActualElement.HasElements;
+            var logicalElementAttributeName = isLeafNodeWithIdentificationAttribute
+            ? string.Format("[{0}]", logicalElementAttribute.Value)
+            : string.Empty;
+
+            stringBuilder.Append(string.Format("/{0}{1}", ActualElement.Name, logicalElementAttributeName));
             stringBuilder.Insert(0,
                 ParentElement == null ?
                     string.Format("{0}", Config.DocumentName)
