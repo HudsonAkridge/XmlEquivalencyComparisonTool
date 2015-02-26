@@ -61,6 +61,7 @@
     <Compile Include="PromoteElementToAttributeXmlPreProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringPreProcessor.cs" />
+    <Compile Include="XmlEquivalencyComparisonService.cs" />
     <Compile Include="XmlPreProcessor.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
