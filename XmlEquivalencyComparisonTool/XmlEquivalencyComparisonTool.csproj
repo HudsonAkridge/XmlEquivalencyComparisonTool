@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddSchemaToTableAttributeXmlPreProcessor.cs" />
     <Compile Include="AreEquivalentResponse.cs" />
     <Compile Include="ClearXmlnsAttributeStringPreProcessor.cs" />
     <Compile Include="ComparisonXmlAttribute.cs" />

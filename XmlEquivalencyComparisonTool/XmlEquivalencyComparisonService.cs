@@ -32,6 +32,7 @@ namespace XmlEquivalencyComparisonTool
             var comparisonXmlDoc = XElement.Parse(comparisonXmlText);
             var xmlPreProcessors = new List<XmlPreProcessor>
             {
+                new AddSchemaToTableAttributeXmlPreProcessor(),
                 new RemoveAttributesFromXmlPreProcessor(_attributesToIgnore),
                 new PromoteElementToAttributeXmlPreProcessor(XName.Get("column"), XName.Get("name"))
             };
